@@ -1,0 +1,126 @@
+/* Reset default margin and padding */
+body, h1, h2, p, ul, li, button, table {
+  margin: 0;
+  padding: 0;
+}
+
+/* Define a container for the entire popup */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
+  padding: 20px;
+}
+
+/* Style the task text input field */
+#taskName {
+  font-size: 16px;
+  padding: 10px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+/* Style the timer display to look like a stopwatch */
+#timerDisplay {
+  width: 200px; /* Adjust the width and height to make it a circle */
+  height: 200px;
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  background-color: #333;
+  color: #fff;
+  border-radius: 50%; /* Make it a circle by setting border-radius to 50% */
+  padding: 20px; /* Adjust padding as needed */
+  margin: 0 auto; /* Center it horizontally */
+  display: flex; /* Enable flex layout for centering */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+}
+
+/* Style the buttons */
+button {
+  font-size: 18px;
+  padding: 10px 20px;
+  margin-top: 10px;
+  background-color: #0073e6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #005bb9;
+}
+
+/* Style the table for task data */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+table th, table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+table th {
+  background-color: #0073e6;
+  color: #fff;
+}
+
+/* Style the delete button */
+.delete-button {
+  background-color: #e74c3c;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin-left: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+  background-color: #c0392b;
+}
+
+/* Remove bullet points from the task list */
+#taskList {
+  list-style-type: none;
+  padding: 0;
+}
+
+/* Style the task list items */
+#taskList li {
+  background-color: #fff;
+  margin: 5px 0;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* Style the elapsed time span */
+.elapsed-time {
+  cursor: pointer;
+   /* Add a smooth color transition */
+}
+
+/* Hover effect */
+.elapsed-time:hover {
+  color: #0073e6; /* Change text color on hover */
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+/* On click effect that fades after 1 second */
+.elapsed-time.clicked {
+  color: #e909cb;
+    
+  transition: color 0.3s, opacity 1s;
+  opacity: 0.5;
+}
