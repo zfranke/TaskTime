@@ -1,11 +1,16 @@
 // Initialize variables
-let currentTimer = 0;
+let startTime = 0;
+let timerInterval;
 let isTimerRunning = false;
+let isTaskPaused = false; // Added variable to track task pause state
+let currentTimer = 0; // Added variable to track current timer
+let alarmName = "timer"; // Name for the alarm
 
 // DOM elements
 const taskNameInput = document.getElementById('taskName');
+const startStopButton = document.getElementById('startStop');
 const saveButton = document.getElementById('save');
-const resumeButton = document.getElementById('resume');
+const resumeButton = document.getElementById('resume'); // Added Resume button
 const timerDisplay = document.getElementById('timerDisplay');
 const taskList = document.getElementById('taskList');
 const resetButton = document.getElementById('reset');
@@ -13,12 +18,28 @@ const resetButton = document.getElementById('reset');
 // Load saved tasks from local storage
 const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
 
-// Function to update the timer display
-function updateTimerDisplay() {
-  timerDisplay.textContent = formatTime(currentTimer);
+// Function to resume a task
+function resumeTask() {
+  startTime = Date.now() - currentTimer;
+  timerInterval = setInterval(updateTimer, 1000);
+  startStopButton.textContent = 'Stop';
+  isTimerRunning = true;
+  isTaskPaused = false;
+  resumeButton.style.display = 'none'; // Hide Resume button
 }
 
-// Function to format time as HH:MM:SS
+// Function to copy text to clipboard
+function copyToClipboard(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand('copy');
+  document.body.removeChild(textarea);
+}
+
+
+// Format time as HH:MM:SS
 function formatTime(milliseconds) {
   const seconds = Math.floor((milliseconds / 1000) % 60);
   const minutes = Math.floor((milliseconds / (1000 * 60)) % 60);
@@ -26,55 +47,85 @@ function formatTime(milliseconds) {
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 }
 
-// Function to start the timer
-function startTimer() {
-  const startTime = Date.now() - currentTimer;
-  isTimerRunning = true;
-  timerInterval = setInterval(() => {
-    currentTimer = Date.now() - startTime;
-    updateTimerDisplay();
-  }, 1000);
+// Function to start the stopwatch
+function startStopwatch() {
+  if (!isTimerRunning) {
+    // If the timer is not running, start it with the current timer value
+    startTime = Date.now() - currentTimer;
+    timerInterval = setInterval(updateTimer, 1000);
+    startStopButton.textContent = 'Stop';
+    isTimerRunning = true;
+    isTaskPaused = false;
+    resumeButton.style.display = 'none'; // Hide Resume button
+  } else {
+    clearInterval(timerInterval);
+    startStopButton.textContent = 'Start';
+    isTimerRunning = false;
+    isTaskPaused = true;
+    resumeButton.style.display = 'none'; // Show Resume button
+  }
 }
 
-// Function to stop the timer
-function stopTimer() {
-  clearInterval(timerInterval);
-  isTimerRunning = false;
+// Event listener for the start/stop button
+startStopButton.addEventListener('click', startStopwatch);
+
+// Update the timer display
+function updateTimer() {
+  const currentTime = Date.now();
+  currentTimer = currentTime - startTime;
+  timerDisplay.textContent = formatTime(currentTimer);
+}
+
+// Function to delete a task by index
+function deleteTask(index) {
+  savedTasks.splice(index, 1);
+  localStorage.setItem('tasks', JSON.stringify(savedTasks));
+  updateTaskList();
 }
 
 // Event listener for the save button
 saveButton.addEventListener('click', () => {
   const taskName = taskNameInput.value.trim();
+  // Check if a name is entered and if not, alert the user and don't save
   if (!taskName) {
     alert('Please enter a task name.');
     return;
   }
 
+  // Calculate the elapsed time without changing the timer state
   const elapsedTime = currentTimer;
+
   const task = { name: taskName, elapsedTime };
 
+  // Save the task to local storage
   savedTasks.push(task);
   localStorage.setItem('tasks', JSON.stringify(savedTasks));
 
+  // Clear input and update the task list
   taskNameInput.value = '';
   updateTaskList();
 });
 
 // Event listener for the resume button
 resumeButton.addEventListener('click', () => {
-  startTimer();
-  resumeButton.style.display = 'none';
+  resumeTask(); // Resume the task
 });
 
 // Event listener for the reset button
 resetButton.addEventListener('click', () => {
-  currentTimer = 0;
-  updateTimerDisplay();
-  stopTimer();
-  resumeButton.style.display = 'inline';
+  savedTasks.length = 0; // Clear the task list
+  localStorage.setItem('tasks', JSON.stringify(savedTasks));
+  updateTaskList();
+  if (isTimerRunning) {
+    clearInterval(timerInterval);
+    isTimerRunning = false;
+    isTaskPaused = false;
+    startStopButton.textContent = 'Start';
+    resumeButton.style.display = 'none'; // Hide Resume button
+  }
 });
 
-// Function to update the task list
+// Update the task list
 function updateTaskList() {
   taskList.innerHTML = '';
   savedTasks.forEach((task, index) => {
@@ -86,15 +137,13 @@ function updateTaskList() {
     `;
     taskList.appendChild(taskItem);
 
+    // Add a click event listener to the elapsed time for copying and applying the click effect
     const elapsedTimeSpan = taskItem.querySelector('.elapsed-time');
     elapsedTimeSpan.addEventListener('click', () => {
-      const tempTextArea = document.createElement('textarea');
-      tempTextArea.value = formatTime(task.elapsedTime);
-      document.body.appendChild(tempTextArea);
-      tempTextArea.select();
-      document.execCommand('copy');
-      document.body.removeChild(tempTextArea);
+      copyToClipboard(formatTime(task.elapsedTime));
+      // Apply the .clicked class to indicate it was clicked
       elapsedTimeSpan.classList.add('clicked');
+      // Remove the .clicked class after a short delay (e.g., 500ms)
       setTimeout(() => {
         elapsedTimeSpan.classList.remove('clicked');
       }, 500);
@@ -102,29 +151,12 @@ function updateTaskList() {
   });
 }
 
-// Event listener for the timer display (toggle start/stop functionality)
-document.getElementById('timerDisplay').addEventListener('click', () => {
-  // Toggle the timer state in the background script
-  chrome.runtime.sendMessage({ cmd: isTimerRunning ? 'stopTimer' : 'startTimer', currentTimer });
-});
 
-// Initialize the timer display when the popup is opened
-chrome.runtime.sendMessage({ cmd: 'getCurrentTimer', currentTimer }, (response) => {
-  if (response.currentTimer) {
-    currentTimer = response.currentTimer;
-    if (isTimerRunning) {
-      startTimer();
-    }
-    updateTimerDisplay();
-  }
-});
 
-// Function to delete a task by index
-function deleteTask(index) {
-  savedTasks.splice(index, 1);
-  localStorage.setItem('tasks', JSON.stringify(savedTasks));
-  updateTaskList();
-}
+// Event listener for the circular timer display
+document.getElementById('timerDisplay').addEventListener('click', function() {
+  startStopwatch(); // Call the startStopwatch function to toggle start/stop
+});
 
 // Initialize the task list
 updateTaskList();
