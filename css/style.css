@@ -31,11 +31,23 @@ body {
   background-color: #333;
   color: #fff;
   border-radius: 50%; /* Make it a circle by setting border-radius to 50% */
-  padding: 20px; /* Adjust padding as needed */
+  padding: 15px; /* Adjust padding as needed */
   margin: 0 auto; /* Center it horizontally */
   display: flex; /* Enable flex layout for centering */
   align-items: center; /* Center vertically */
   justify-content: center; /* Center horizontally */
+}
+
+/*time display hover effect*/
+#timerDisplay:hover {
+  background-color: #000;
+  transition: background-color 0.3s;
+}
+
+/*time display click effect*/
+#timerDisplay.clicked {
+  background-color: #e909cb;
+  transition: background-color 0.3s;
 }
 
 /* Style the buttons */
@@ -123,4 +135,10 @@ table th {
     
   transition: color 0.3s, opacity 1s;
   opacity: 0.5;
+}
+
+/* Style the button container */
+.button-container {
+  text-align: center; /* Center its children horizontally */
+  margin-top: 5px; /* Add spacing from the task list */
 }
